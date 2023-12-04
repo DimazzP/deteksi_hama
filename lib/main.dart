@@ -1,5 +1,6 @@
 import 'package:deteksi_hama/configs/font_family.dart';
-import 'package:deteksi_hama/screens/splash_screen.dart';
+import 'package:deteksi_hama/screens/dashboard_screen.dart';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -7,6 +8,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+
   runApp(const MyApp());
 }
 
@@ -30,7 +32,7 @@ class MyApp extends StatelessWidget {
           home: child,
         );
       },
-      child: const SplashScreen(),
+      child: DashboardScreen(),
     );
   }
 }

@@ -1,7 +1,6 @@
 import 'package:deteksi_hama/configs/app_colors.dart';
 import 'package:deteksi_hama/configs/font_family.dart';
 import 'package:deteksi_hama/screens/detail_screen.dart';
-import 'package:deteksi_hama/widgets/text_helper.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -18,8 +17,12 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  Query dbRef = FirebaseDatabase.instance.ref().child('data');
-  DatabaseReference reference = FirebaseDatabase.instance.ref().child('data');
+  Query dbRef = FirebaseDatabase.instance.ref().child('deteksi_tikus');
+  DatabaseReference reference =
+      FirebaseDatabase.instance.ref().child('deteksi_tikus');
+  DatabaseReference sensorReference =
+      FirebaseDatabase.instance.ref().child('sensor');
+  DatabaseReference alatReference = FirebaseDatabase.instance.ref();
 
   final storage = FirebaseStorage.instance;
 
@@ -78,11 +81,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               children: [
                                 Image.asset('assets/images/world.png',
                                     width: 50.w, height: 50.h),
-                                Text(
-                                  "Gelap",
-                                  style: TextStyle(
-                                      fontSize: 20.sp, color: AppColors.dark),
-                                ),
+                                StreamBuilder(
+                                    stream:
+                                        sensorReference.child('ldr').onValue,
+                                    builder: (context, snapshot) {
+                                      if (snapshot.data == null) {
+                                        return const Center(
+                                            child: CircularProgressIndicator());
+                                      }
+                                      return Text(
+                                        snapshot.data!.snapshot.value
+                                            .toString(),
+                                        style: TextStyle(
+                                            fontSize: 20.sp,
+                                            color: AppColors.dark),
+                                      );
+                                    }),
                               ],
                             )
                           ],
@@ -122,10 +136,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               children: [
                                 Image.asset('assets/images/iot.png',
                                     width: 50.w, height: 50.h),
-                                Text(
-                                  "4",
-                                  style: TextStyle(
-                                      fontSize: 20.sp, color: AppColors.dark),
+                                StreamBuilder(
+                                  stream: alatReference
+                                      .child('jumlah_alat')
+                                      .onValue,
+                                  builder: (context, snapshot) {
+                                    if (snapshot.data == null) {
+                                      return const Center(
+                                          child: CircularProgressIndicator());
+                                    }
+                                    return Container(
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        ' ' +
+                                            snapshot.data!.snapshot.value
+                                                .toString(),
+                                        style: TextStyle(
+                                            fontSize: 20.sp,
+                                            color: AppColors.dark),
+                                      ),
+                                    );
+                                  },
                                 ),
                               ],
                             )
@@ -169,15 +200,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               ),
                             ),
                             SizedBox(height: 10.h),
-                            Container(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                "Ada",
-                                style: TextStyle(
-                                    fontSize: 20.sp,
-                                    color: AppColors.dark,
-                                    fontFamily: FontFamily.bold),
-                              ),
+                            StreamBuilder(
+                              stream: sensorReference.child('pir').onValue,
+                              builder: (context, snapshot) {
+                                if (snapshot.data == null) {
+                                  return const Center(
+                                      child: CircularProgressIndicator());
+                                }
+                                return Container(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    snapshot.data!.snapshot.value.toString(),
+                                    style: TextStyle(
+                                        fontSize: 20.sp,
+                                        color: AppColors.dark,
+                                        fontFamily: FontFamily.bold),
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),
@@ -218,12 +258,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               builder: (context, snapshot) {
                                 if (snapshot.data != null) {
                                   DataSnapshot data = snapshot.data!.snapshot;
-                                  dynamic values = data.value as List;
+                                  dynamic values = data.value as Map;
                                   return Container(
                                     alignment: Alignment.centerLeft,
                                     width: double.infinity,
                                     child: Text(
-                                      '${values.length - 1} Serangan',
+                                      '${values.length - 1} Ancaman',
                                       style: TextStyle(
                                         color: AppColors.dark,
                                         fontSize: 20.sp,
@@ -232,7 +272,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     ),
                                   );
                                 }
-                                return const CircularProgressIndicator();
+                                return const Center(
+                                    child: CircularProgressIndicator());
                               },
                             ),
                             SizedBox(height: 8.h),
@@ -259,11 +300,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   physics: const NeverScrollableScrollPhysics(),
                   query: dbRef,
                   itemBuilder: (context, snapshotData, animation, index) {
+                    if (snapshotData.value == null) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
                     Map data = snapshotData.value as Map;
+                    print(data['nama_gambar'] + 'nama gambar');
                     return FutureBuilder(
-                        future: urlImages(data['gambar']),
+                        future: urlImages(data['nama_gambar']),
                         builder: (context, AsyncSnapshot snapshot) {
-                          if (snapshot.data == null) {
+                          // return Text(snapshot.data.toString());
+                          if (snapshot.toString().isEmpty ||
+                              snapshot.data == null) {
                             return const Center(
                                 child: CircularProgressIndicator());
                           }
@@ -281,7 +328,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   child: InkWell(
                                     onTap: () {
                                       Map detailImage = {
-                                        'url': data['gambar'],
+                                        'url': data['nama_gambar'],
                                         'waktu':
                                             "${data['tanggal']} : ${data['jam']}"
                                       };
@@ -361,7 +408,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<String> urlImages(linkUrl) async {
-    final ref = storage.ref().child(linkUrl);
+    final ref =
+        await FirebaseStorage.instance.ref().child('data/image/${linkUrl}');
     final url = await ref.getDownloadURL();
     return url;
   }

@@ -9,7 +9,9 @@ class DetailScreen extends StatelessWidget {
   final storage = FirebaseStorage.instance;
 
   Future<String> urlImages(Map linkUrl) async {
-    final ref = storage.ref().child(linkUrl['url']);
+    final ref = await FirebaseStorage.instance
+        .ref()
+        .child("data/image/${linkUrl['url']}");
     final url = await ref.getDownloadURL();
     return url;
   }
