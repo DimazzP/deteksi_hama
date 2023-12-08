@@ -1,5 +1,4 @@
 import 'package:deteksi_hama/configs/font_family.dart';
-import 'package:deteksi_hama/screens/dashboard_screen.dart';
 import 'package:deteksi_hama/screens/splash_screen.dart';
 
 import 'package:firebase_core/firebase_core.dart';

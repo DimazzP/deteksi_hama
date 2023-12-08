@@ -254,16 +254,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ),
                             SizedBox(height: 10.h),
                             StreamBuilder<DatabaseEvent>(
-                              stream: reference.onValue,
-                              builder: (context, snapshot) {
-                                if (snapshot.data != null) {
+                                stream: reference.onValue,
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                  } else if (!snapshot.data!.snapshot.exists) {
+                                    return Container(
+                                      alignment: Alignment.centerLeft,
+                                      width: double.infinity,
+                                      child: Text(
+                                        '0 Ancaman',
+                                        style: TextStyle(
+                                          color: AppColors.dark,
+                                          fontSize: 20.sp,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    );
+                                  }
                                   DataSnapshot data = snapshot.data!.snapshot;
                                   dynamic values = data.value as Map;
                                   return Container(
                                     alignment: Alignment.centerLeft,
                                     width: double.infinity,
                                     child: Text(
-                                      '${values.length - 1} Ancaman',
+                                      '${values.length} Ancaman',
                                       style: TextStyle(
                                         color: AppColors.dark,
                                         fontSize: 20.sp,
@@ -271,11 +286,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       ),
                                     ),
                                   );
-                                }
-                                return const Center(
-                                    child: CircularProgressIndicator());
-                              },
-                            ),
+                                }),
                             SizedBox(height: 8.h),
                           ],
                         ),
@@ -300,19 +311,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   physics: const NeverScrollableScrollPhysics(),
                   query: dbRef,
                   itemBuilder: (context, snapshotData, animation, index) {
-                    if (snapshotData.value == null) {
-                      return const Center(child: CircularProgressIndicator());
+                    if (!snapshotData.exists) {
+                      return const Center(
+                        child: Text('Tidak Ada Tikus Terdeteksi'),
+                      );
                     }
                     Map data = snapshotData.value as Map;
-                    print(data['nama_gambar'] + 'nama gambar');
                     return FutureBuilder(
                         future: urlImages(data['nama_gambar']),
                         builder: (context, AsyncSnapshot snapshot) {
-                          // return Text(snapshot.data.toString());
-                          if (snapshot.toString().isEmpty ||
-                              snapshot.data == null) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
                             return const Center(
                                 child: CircularProgressIndicator());
+                          }
+                          if (!snapshot.hasData) {
+                            return const Center(
+                                child: Text('Tidak Ada Ancaman'));
                           }
                           return Container(
                             decoration: const BoxDecoration(

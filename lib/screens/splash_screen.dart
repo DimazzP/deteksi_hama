@@ -1,6 +1,7 @@
 import 'package:deteksi_hama/configs/app_colors.dart';
 import 'package:deteksi_hama/screens/dashboard_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:page_animation_transition/animations/left_to_right_faded_transition.dart';
 import 'package:page_animation_transition/page_animation_transition.dart';
 
@@ -30,7 +31,14 @@ class _SplashScreenState extends State<SplashScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [Image.asset('assets/images/tikus158.jpg')],
+        children: [
+          Center(
+            child: SizedBox(
+              width: 200.w,
+              child: Image.asset('assets/images/rat-splash.png'),
+            ),
+          )
+        ],
       ),
       bottomNavigationBar: Container(
         width: double.infinity,
